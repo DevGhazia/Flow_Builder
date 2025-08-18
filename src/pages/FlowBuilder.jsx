@@ -2,16 +2,14 @@ import React from 'react'
 import { Navbar } from '../components/Navbar'
 import { FlowPanel } from '../components/FlowPanel'
 import { Sidebar } from '../components/Sidebar'
-
+import { Nimoda } from '../components/Nimoda'
 
 export const FlowBuilder = () => {
     return (
-        <div className='h-screen w-screen flex flex-col'>
+        <div className='grid grid-rows-[50px_1fr] grid-cols-[1fr_min-content] h-screen'>
             <Navbar />
-            <div className='flex flex-grow'>
-                <FlowPanel />
-                <Sidebar />
-            </div>
+            <FlowPanel />
+            <Sidebar />
         </div>
     )
 }
