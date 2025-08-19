@@ -1,35 +1,41 @@
-import { addEdge, applyEdgeChanges, applyNodeChanges, Position, ReactFlow } from '@xyflow/react'
-import React, { useCallback, useState } from 'react'
+import { applyNodeChanges, ReactFlow, useReactFlow } from '@xyflow/react'
+import React, { useCallback } from 'react'
 import '@xyflow/react/dist/style.css';
-
-const defaultHandlePosition = {
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left
-}
-
-const initialNodes = [
-    {id: 'n1', position:  {x:0, y:0}, data: {label: 'Node 1'}, ...defaultHandlePosition},
-    {id: 'n2', position:  {x:100, y:100}, data: {label: 'Node 2'}, ...defaultHandlePosition}
-]
-
-const initialEdges = [
-    {id: 'n1-n2', source: 'n1', target: 'n2'}
-]
+import { useDispatch, useSelector } from 'react-redux';
+import { updateNodes, setNodeChanges, setEdgeChanges, connectEdges } from '../slices/flowSlice';
 
 export const FlowPanel = () => {
-    const [nodes, setNodes] = useState(initialNodes);
-    const [edges, setEdges] = useState(initialEdges);
+    const {nodes, edges} = useSelector((state)=>state.flow);
+    const dispatch = useDispatch();
+    const { screenToFlowPosition } = useReactFlow();
 
     const onNodesChange = useCallback((changes)=>{
-        setNodes(prev => applyNodeChanges(changes, prev));
+        dispatch(setNodeChanges(changes));
     }, []);
 
     const onEdgesChange = useCallback((changes)=>{
-        setEdges(prev=> applyEdgeChanges(changes, prev)); 
-    }, []);
+        dispatch(setEdgeChanges(changes));
+    }, [dispatch]);
 
     const onConnect = useCallback((params)=>{
-        setEdges(prev=> addEdge(params, prev));
+        dispatch(connectEdges(params));
+    }, [dispatch]);
+
+    const onDragStart = (event)=>{
+        event.dataTransfer.effectAllowed = 'move';
+    };
+
+    const onDrop = useCallback((event)=>{
+        event.preventDefault();
+        const position = screenToFlowPosition({x: event.clientX, y: event.clientY});
+        const newNode = {id: `${Math.random()*100}` , position, data: {label: "node nimoda"}};
+        dispatch(updateNodes([...nodes, newNode]));    
+        console.log(edges, nodes);
+    }, [screenToFlowPosition, dispatch]);
+
+    const onDragOver = useCallback((event)=>{
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
     }, []);
 
     return (
@@ -40,6 +46,9 @@ export const FlowPanel = () => {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onDragStart={onDragStart}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
                 fitView
             />
         </div>
