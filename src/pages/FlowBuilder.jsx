@@ -2,7 +2,6 @@ import React from 'react'
 import { Navbar } from '../components/Navbar'
 import { FlowPanel } from '../components/FlowPanel'
 import { Sidebar } from '../components/Sidebar'
-import { Nimoda } from '../components/Nimoda'
 
 export const FlowBuilder = () => {
     return (
