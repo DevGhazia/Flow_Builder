@@ -4,10 +4,11 @@ import { setType } from '../slices/flowSlice';
 import { useReactFlow } from '@xyflow/react';
 import { IoMdArrowBack } from 'react-icons/io';
 import { setSelectedNodeId } from '../slices/flowSlice';
+import { getNodeFromId } from '../utils/nodesUtil';
 
 export const Sidebar = () => {
     const dispatch = useDispatch();
-    const {seletedNodeId, nodes} = useSelector((state) => state.flow);
+    const {selectedNodeId, nodes} = useSelector((state) => state.flow);
     const flow = useReactFlow();
 
     function onDragStart(event, nodeType){
@@ -15,12 +16,10 @@ export const Sidebar = () => {
         event.dataTransfer.effectAllowed = 'move';
     };
 
-    const selectedNode = seletedNodeId? nodes.find((node)=>node.id === seletedNodeId) : null;
-
     return (
         <aside className='w-[300px] text-sm border border-gray-300'>
             { 
-                seletedNodeId? 
+                selectedNodeId? 
                 // ****** NODE PANEL ******
                 <div className='flex flex-col'>
                     <div className='relative flex p-2 border-b border-gray-300 items-center justify-center'>
@@ -37,9 +36,9 @@ export const Sidebar = () => {
                         <textarea 
                             id='message'
                             type='text' 
-                            value={selectedNode.data.text} 
+                            value={getNodeFromId(nodes, selectedNodeId).data.text}
                             className='min-h-24 p-2 rounded resize-none border border-gray-400'
-                            onChange={(event)=>flow.updateNodeData(seletedNodeId, {text: event.target.value})}
+                            onChange={(event)=>flow.updateNodeData(selectedNodeId, {text: event.target.value})}
                         ></textarea>
                     </div> 
                 </div>
@@ -50,12 +49,7 @@ export const Sidebar = () => {
                         <BiMessageRoundedDetail className='text-2xl'/>
                         <span>Message</span>
                     </div>
-                    <div className='flex flex-col justify-center items-center gap-1 py-2 border border-blue-600 rounded-[5px] cursor-grab' onDragStart={(event)=>onDragStart(event, 'group')} draggable >
-                        <BiMessageRoundedDetail className='text-2xl'/>
-                        <span>Message</span>
-                    </div>
                 </div>
-
             }
         </aside>
     )

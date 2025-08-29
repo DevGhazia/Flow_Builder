@@ -1,20 +1,25 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { addEdge, applyEdgeChanges, applyNodeChanges } from "@xyflow/react";
+import { areAllNodesConnected, getSavedFlow, saveFlow } from "../utils/nodesUtil";
+
+// Getting the saved flow instance from local storage
+const savedFlow = getSavedFlow();
 
 const initialNodes = [
     {id: 'n1', type: 'message', position: {x:0, y:0}, data: {text: 'Text message'} },
-    {id: 'n2', type: 'message', position: {x:400, y:100}, data: {text: 'message 1'}}
+    {id: 'n2', type: 'message', position: {x:400, y:100}, data: {text: 'Text message'}}
 ]
 
 const initialEdges = [
-    {id: 'n1-n2', source: 'n1', target: 'n2'}
+    {id: 'xy-edge__n1-n2', source: 'n1', target: 'n2'}
 ]
 
 const initialState = {
-    nodes: initialNodes,
-    edges: initialEdges,
+    nodes: savedFlow? savedFlow.nodes : initialNodes,
+    edges: savedFlow? savedFlow.edges : initialEdges,
     type: "message",
-    seletedNodeId: null
+    selectedNodeId: null,
+    allConnected: true,
 }
 
 const flowSlice = createSlice({
@@ -37,12 +42,33 @@ const flowSlice = createSlice({
             state.type = action.payload;
         },
         setSelectedNodeId : (state, action)=>{
-            state.seletedNodeId = action.payload;
+            state.selectedNodeId = action.payload;
         },
+        setAllConnected: (state, action)=>{
+            state.allConnected = action.payload;
+        }
     },
     extraReducers: (builder)=>{}
 });
 
-export const {updateNodes, setNodeChanges, setEdgeChanges, connectEdges, setType, setSelectedNodeId} = flowSlice.actions;
+export const {
+    updateNodes, 
+    setNodeChanges, 
+    setEdgeChanges, 
+    connectEdges, 
+    setType, 
+    setSelectedNodeId, 
+    setAllConnected,
+} = flowSlice.actions;
+
+// Thunk
+export const saveIfConnected = () =>(dispatch, getState)=>{
+    const {nodes, edges} = getState().flow;
+    const areConnected = areAllNodesConnected(nodes, edges);
+    dispatch(setAllConnected(areConnected));
+    if(areConnected)
+        saveFlow(nodes, edges);
+}
+
 export default flowSlice.reducer;
  
